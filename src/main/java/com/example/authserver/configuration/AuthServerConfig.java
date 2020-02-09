@@ -10,8 +10,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
+import javax.sql.DataSource;
+
 @Configuration
-public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
+public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -21,6 +23,9 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private DataSource dataSource;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -39,15 +44,6 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory()
-                .withClient("user-service")
-                .secret(passwordEncoder.encode("123"))
-                .authorizedGrantTypes("password", "refresh_token")
-//                .scopes("read", "write")
-                .and().withClient("movie-service")
-                .secret(passwordEncoder.encode("123"))
-                .authorizedGrantTypes("password", "refresh_token")
-//                .scopes("read")
-        ;
+        clients.jdbc(dataSource).passwordEncoder(passwordEncoder);
     }
 }
